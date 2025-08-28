@@ -1,9 +1,5 @@
-#pragma once
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <type_traits>
-#include "../RandomDataGenerator/RandomGenerators.h"
+#include "ExperimentRunner.h"
+#include <climits>
 
 namespace detail {
     template<typename ProbingStrategy>
@@ -20,9 +16,10 @@ namespace detail {
 template<typename ProbingStrategy>
 void run_experiment(
     int table_size,
+    std::vector<int> data,
     const ProbingStrategy& strategy,
     const DistributionType distribution_type,
-    std::ofstream& file    
+    std::ofstream& file
 ) {
     const std::string& strategy_name = strategy.name;
     std::string hash_name = detail::get_hash_name_from_probing_strategy(strategy);
@@ -33,25 +30,16 @@ void run_experiment(
     {
     case DistributionType::Uniform:
         dist_name = "Uniform";
-        param1 = INT_MIN;
-        param2 = INT_MAX;
         break;
-            case DistributionType::SEQUENTIAL:
+    case DistributionType::SEQUENTIAL:
         dist_name = "Sequential";
-        param1 = INT_MIN;
-        param2 = INT_MAX;
-        break; 
-        case DistributionType::Normal:
+        break;
+    case DistributionType::Normal:
         dist_name = "Normal";
-        param1 = INT_MIN;
-        param2 = INT_MAX;
         break;
-            case DistributionType::CLUSTERED:
+    case DistributionType::CLUSTERED:
         dist_name ="Clustered";
-        param1 = INT_MIN;
-        param2 = INT_MAX;
         break;
-
     default:
         break;
     }
@@ -60,30 +48,17 @@ void run_experiment(
 
     OpenAddressingHashTable<ProbingStrategy> table(table_size, strategy);
 
-    std::vector<int> data = generateRandomIntegers(table_size * 20, distribution_type, param1, param2);
-    // std::ofstream outFile("" + std::to_string(table_size) + "_" + dist_name + "_output.csv"); // Open file
-
-
-    // for (size_t i = 0; i < data.size(); ++i) {
-    //     outFile << data[i] << "\n";
-    // }
-
-    // outFile << std::endl; // Optional: end line
-
-    // outFile.close(); // Close file
-    
     int i = 0;
 
-
-    while (table.getLoadFactor() < 95) {
+    while (i < data.size()) {
         try {
-        double loadFactorBefore = table.getLoadFactor();
-        int probe_count = table.insert(data[i]);
+            double loadFactorBefore = table.getLoadFactor();
+            int probe_count = table.insert(data[i]);
 
-        if (probe_count > 0) {
-            file << table_size << "," << strategy_name << "," << hash_name << "," << dist_name << "," << loadFactorBefore << "," << probe_count << "\n";
-        } }
-        catch (const std::runtime_error& e) {
+            if (probe_count > 0) {
+                file << table_size << "," << strategy_name << "," << hash_name << "," << dist_name << "," << loadFactorBefore << "," << probe_count << "\n";
+            }
+        } catch (const std::runtime_error& e) {
             std::cout << "      -> Info: Table is full.";
             break;
         }

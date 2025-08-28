@@ -1,0 +1,8 @@
+{
+    "python-envs.pythonProjects": [],
+    "files.associations": {
+        "*.pl": "prolog",
+        "vector": "cpp",
+        "__locale": "cpp"
+    }
+}
